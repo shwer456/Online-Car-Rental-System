@@ -1,0 +1,373 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+
+namespace OnlineCarRentalSystem2
+{
+    public partial class Booking : System.Web.UI.Page
+    {
+         string connetionString;
+         SqlConnection con;
+         SqlDataAdapter da = null;
+         DataSet ds = null;
+         SqlCommand com;
+         int count;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            connetionString = @"Data Source=(LocalDB)\v11.0;AttachDbFilename=D:\project12\OnlineCarRentalSystem2\OnlineCarRentalSystem2\App_Data\carrental1.mdf;Integrated Security=True";
+           
+            con = new SqlConnection(connetionString);
+            ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+            con.Open();
+
+            da = new SqlDataAdapter("select * from booking", con);
+            ds = new DataSet();
+            da.Fill(ds, "booking");
+            GridView1.DataSource = ds.Tables["booking"];
+            GridView1.DataBind();
+
+            con.Close();
+
+
+            if (!Page.IsPostBack)
+            {
+                BindPlanList();
+            }
+        }
+
+        private void BindPlanList()
+        {
+
+            con.Open();
+
+            string com = "Select * from carinfo";
+            SqlDataAdapter da = new SqlDataAdapter(com, con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            dpl_carname.DataSource = dt;
+            dpl_carname.DataBind();
+            dpl_carname.DataTextField = "car_name";
+            dpl_carname.DataValueField = "car_name";
+            dpl_carname.DataBind();
+            dpl_carname.Items.Insert(0, "select carinfo");
+
+            con.Close();
+
+        }
+
+        protected void txt_uid_TextChanged(object sender, EventArgs e)
+        {
+
+            SqlCommand cmd;
+            String str;
+
+            con.Open();
+
+            str = "select user_name,user_contactnumber from registration where Id = '" + txt_uid.Text.Trim() + "'";
+            cmd = new SqlCommand(str, con);
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+
+                txt_un.Text = reader["user_name"].ToString();
+                txt_ucn.Text = reader["user_contactnumber"].ToString();
+                reader.Close();
+                con.Close();
+            }
+
+        }
+
+        protected void rbtn_rpd_CheckedChanged1(object sender, EventArgs e)
+        {
+            SqlCommand cmd;
+            String str;
+
+            if (rbtn_rpd.Checked)
+            {
+                txt_rpk.Text = "";
+                con.Open();
+                str = "select rent_perday from carinfo where car_name = '" + dpl_carname.SelectedItem.Text + "'";
+                cmd = new SqlCommand(str, con);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    txt_rpd.Text = reader["rent_perday"].ToString();
+                    reader.Close();
+                    con.Close();
+                }
+
+            }
+            
+        }
+
+       
+        
+        protected void rbtn_rpk_CheckedChanged(object sender, EventArgs e)
+        {
+            SqlCommand cmd;
+            String str;
+
+            if (rbtn_rpk.Checked)
+            {
+                txt_rpd.Text = "";
+                con.Open();
+                str = "select rent_perkm from carinfo where car_name = '" + dpl_carname.SelectedItem.Text + "'";
+                cmd = new SqlCommand(str, con);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    txt_rpk.Text = reader["rent_perkm"].ToString();
+                    reader.Close();
+                    con.Close();
+                }
+            }
+
+        }
+
+        protected void btn_calculate_Click(object sender, EventArgs e)
+        {
+            if (rbtn_rpd.Checked)
+            {
+                try
+                {
+                    Int32 val1 = Convert.ToInt32(txt_rpd.Text);
+                    Int32 val2 = Convert.ToInt32(txt_nod.Text);
+                    Int32 val3 = val1 * val2;
+                    txt_tamount .Text = val3.ToString(); 
+                    
+                }
+                catch
+                { }
+            }
+            else if (rbtn_rpk.Checked)
+            {
+                try
+                {
+                    Int32 val1 = Convert.ToInt32(txt_rpk.Text);
+                    Int32 val2 = Convert.ToInt32(txt_nok.Text);
+                    Int32 val3 = val1 * val2;
+                    txt_tamount.Text = val3.ToString();
+
+                }
+                catch
+                { }
+            } 
+        }
+
+       protected void Button1_Click(object sender, EventArgs e)
+        {
+            String bid, userid, username, contactnumber, carnames, rentperday, rentperkm, numberofdays, numberofkm, bookingform, bookingto, travellingdate, travellingtime, returndate, returntime, totaltime;
+            bid = txt_id.Text.Trim();
+            userid = txt_uid.Text.Trim();
+            username = txt_un.Text.Trim();
+            contactnumber = txt_ucn.Text.Trim();
+            carnames = dpl_carname.Text.Trim();
+            rentperday = txt_rpd.Text.Trim();
+            rentperkm = txt_rpk.Text.Trim();
+            numberofdays = txt_nod.Text.Trim();
+            numberofkm = txt_nok.Text.Trim();
+            bookingform = txt_bf.Text.Trim();
+            bookingto = txt_bt.Text.Trim();
+            travellingdate = txt_td.Text.Trim();
+            travellingtime = txt_tt.Text.Trim();
+            returndate = txt_rd.Text.Trim();
+            returntime = txt_rt.Text.Trim();
+            totaltime = txt_tamount.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("insert into booking(Id,user_id,user_name,contact_number,car_names,rentper_day,rentper_kms,numberof_days,numberof_kms,booking_from,booking_to,travelling_date,travelling_time,return_date,return_time,total_amount) values(@Id,@user_id,@user_name,@contact_number,@car_names,@rentper_day,@rentper_kms,@numberof_days,@numberof_kms,@booking_from,@booking_to,@travelling_date,@travelling_time,@return_date,@return_time,@total_amount)", con);
+            cmd.Parameters.AddWithValue("@Id", bid);
+            cmd.Parameters.AddWithValue("@user_id", userid);
+            cmd.Parameters.AddWithValue("@user_name", username);
+            cmd.Parameters.AddWithValue("@contact_number", contactnumber);
+            cmd.Parameters.AddWithValue("@car_names", carnames);
+            cmd.Parameters.AddWithValue("@rentper_day", rentperday);
+            cmd.Parameters.AddWithValue("@rentper_kms", rentperkm);
+            cmd.Parameters.AddWithValue("@numberof_days", numberofdays);
+            cmd.Parameters.AddWithValue("@numberof_kms", numberofkm);
+            cmd.Parameters.AddWithValue("@booking_from", bookingform);
+            cmd.Parameters.AddWithValue("@booking_to", bookingto);
+            cmd.Parameters.AddWithValue("@travelling_date", travellingdate);
+            cmd.Parameters.AddWithValue("@travelling_time", travellingtime);
+            cmd.Parameters.AddWithValue("@return_date", returndate);
+            cmd.Parameters.AddWithValue("@return_time", returntime);
+            cmd.Parameters.AddWithValue("@total_amount", totaltime);
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from booking", con);
+            ds = new DataSet();
+            da.Fill(ds, "booking");
+            GridView1.DataSource = ds.Tables["booking"];
+            GridView1.DataBind();
+
+            con.Close();  
+
+        }
+
+       protected void btn_new_Click(object sender, EventArgs e)
+       {
+           //SqlConnection con = new SqlConnection(strConnString);
+           String str = "select count(*)from booking ";
+           com = new SqlCommand(str, con);
+
+           con.Open();
+
+           count = Convert.ToInt16(com.ExecuteScalar()) + 1;
+           txt_id.Text = count.ToString();
+           txt_id.Enabled = false;
+
+           con.Close();
+
+       }
+
+       protected void btn_update_Click(object sender, EventArgs e)
+       {
+           String bid, userid, username, contactnumber, carnames, rentperday, rentperkm, numberofdays, numberofkm, bookingform, bookingto, travellingdate, travellingtime, returndate, returntime, totaltime;
+           bid = txt_id.Text.Trim();
+           userid = txt_uid.Text.Trim();
+           username = txt_un.Text.Trim();
+           contactnumber = txt_ucn.Text.Trim();
+           carnames = dpl_carname.Text.Trim();
+           rentperday = txt_rpd.Text.Trim();
+           rentperkm = txt_rpk.Text.Trim();
+           numberofdays = txt_nod.Text.Trim();
+           numberofkm = txt_nok.Text.Trim();
+           bookingform = txt_bf.Text.Trim();
+           bookingto = txt_bt.Text.Trim();
+           travellingdate = txt_td.Text.Trim();
+           travellingtime = txt_tt.Text.Trim();
+           returndate = txt_rd.Text.Trim();
+           returntime = txt_rt.Text.Trim();
+           totaltime = txt_tamount.Text.Trim();
+           con.Open();
+           SqlCommand cmd = new SqlCommand("update booking set user_id=@user_id,user_name=@user_name,contact_number=@contact_number,car_names=@car_names,rentper_day=@rentper_day,rentper_kms=@rentper_kms,numberof_days=@numberof_days,numberof_kms=@numberof_kms,booking_from=@booking_from,booking_to=@booking_to,travelling_date=@travelling_date,travelling_time=@travelling_time,return_date=@return_date,return_time=@return_time,total_amount=@total_amount where Id=@Id", con);
+           cmd.Parameters.AddWithValue("@Id", bid);
+           cmd.Parameters.AddWithValue("@user_id", userid);
+           cmd.Parameters.AddWithValue("@user_name", username);
+           cmd.Parameters.AddWithValue("@contact_number", contactnumber);
+           cmd.Parameters.AddWithValue("@car_names", carnames);
+           cmd.Parameters.AddWithValue("@rentper_day", rentperday);
+           cmd.Parameters.AddWithValue("@rentper_kms", rentperkm);
+           cmd.Parameters.AddWithValue("@numberof_days", numberofdays);
+           cmd.Parameters.AddWithValue("@numberof_kms", numberofkm);
+           cmd.Parameters.AddWithValue("@booking_from", bookingform);
+           cmd.Parameters.AddWithValue("@booking_to", bookingto);
+           cmd.Parameters.AddWithValue("@travelling_date", travellingdate);
+           cmd.Parameters.AddWithValue("@travelling_time", travellingtime);
+           cmd.Parameters.AddWithValue("@return_date", returndate);
+           cmd.Parameters.AddWithValue("@return_time", returntime);
+           cmd.Parameters.AddWithValue("@total_amount", totaltime);
+
+           cmd.ExecuteNonQuery();
+           da = new SqlDataAdapter("select * from booking", con);
+           ds = new DataSet();
+           da.Fill(ds, "booking");
+           GridView1.DataSource = ds.Tables["booking"];
+           GridView1.DataBind();
+           con.Close();  
+       }
+
+       protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+       {
+           txt_id.Text = GridView1.SelectedRow.Cells[1].Text;
+           txt_uid.Text = GridView1.SelectedRow.Cells[2].Text;
+           txt_un.Text = GridView1.SelectedRow.Cells[3].Text;
+           txt_ucn.Text = GridView1.SelectedRow.Cells[4].Text;
+           dpl_carname.Text = GridView1.SelectedRow.Cells[5].Text;
+           txt_rpd.Text = GridView1.SelectedRow.Cells[6].Text;
+           txt_rpk.Text = GridView1.SelectedRow.Cells[7].Text;
+           txt_nod.Text = GridView1.SelectedRow.Cells[8].Text;
+           txt_nok.Text = GridView1.SelectedRow.Cells[9].Text;
+           txt_bf.Text = GridView1.SelectedRow.Cells[10].Text;
+           txt_bt.Text = GridView1.SelectedRow.Cells[11].Text;
+           txt_td.Text = GridView1.SelectedRow.Cells[12].Text;
+           txt_tt.Text = GridView1.SelectedRow.Cells[13].Text;
+           txt_rd.Text = GridView1.SelectedRow.Cells[14].Text;
+           txt_rt.Text = GridView1.SelectedRow.Cells[15].Text;
+           txt_tamount.Text = GridView1.SelectedRow.Cells[16].Text;
+       }
+
+       protected void btn_delete_Click(object sender, EventArgs e)
+       {
+           String bid, userid, username, contactnumber, carnames, rentperday, rentperkm, numberofdays, numberofkm, bookingform, bookingto, travellingdate, travellingtime, returndate, returntime, totaltime;
+           bid = txt_id.Text.Trim();
+           userid = txt_uid.Text.Trim();
+           username = txt_un.Text.Trim();
+           contactnumber = txt_ucn.Text.Trim();
+           carnames = dpl_carname.Text.Trim();
+           rentperday = txt_rpd.Text.Trim();
+           rentperkm = txt_rpk.Text.Trim();
+           numberofdays = txt_nod.Text.Trim();
+           numberofkm = txt_nok.Text.Trim();
+           bookingform = txt_bf.Text.Trim();
+           bookingto = txt_bt.Text.Trim();
+           travellingdate = txt_td.Text.Trim();
+           travellingtime = txt_tt.Text.Trim();
+           returndate = txt_rd.Text.Trim();
+           returntime = txt_rt.Text.Trim();
+           totaltime = txt_tamount.Text.Trim();
+           con.Open();
+           SqlCommand cmd = new SqlCommand("delete booking where Id=@Id", con);
+           cmd.Parameters.AddWithValue("@Id", bid);
+           cmd.Parameters.AddWithValue("@user_id", userid);
+           cmd.Parameters.AddWithValue("@user_name", username);
+           cmd.Parameters.AddWithValue("@contact_number", contactnumber);
+           cmd.Parameters.AddWithValue("@car_names", carnames);
+           cmd.Parameters.AddWithValue("@rentper_day", rentperday);
+           cmd.Parameters.AddWithValue("@rentper_kms", rentperkm);
+           cmd.Parameters.AddWithValue("@numberof_days", numberofdays);
+           cmd.Parameters.AddWithValue("@numberof_kms", numberofkm);
+           cmd.Parameters.AddWithValue("@booking_from", bookingform);
+           cmd.Parameters.AddWithValue("@booking_to", bookingto);
+           cmd.Parameters.AddWithValue("@travelling_date", travellingdate);
+           cmd.Parameters.AddWithValue("@travelling_time", travellingtime);
+           cmd.Parameters.AddWithValue("@return_date", returndate);
+           cmd.Parameters.AddWithValue("@return_time", returntime);
+           cmd.Parameters.AddWithValue("@total_amount", totaltime);
+           cmd.ExecuteNonQuery();
+           da = new SqlDataAdapter("select * from booking", con);
+           ds = new DataSet();
+           da.Fill(ds, "booking");
+           GridView1.DataSource = ds.Tables["booking"];
+           GridView1.DataBind();
+           con.Close();  
+       }
+
+       protected void btn_clear_Click(object sender, EventArgs e)
+       {
+           txt_id.Text = "";
+           txt_uid.Text = "";
+           txt_un.Text = "";
+           txt_ucn.Text = "";
+           txt_rpd.Text = "";
+           txt_rpk.Text = "";
+           txt_nod.Text = "";
+           txt_nok.Text = "";
+           txt_bf.Text = "";
+           txt_bt.Text = "";
+           txt_td.Text = "";
+           txt_tt.Text = "";
+           txt_rd.Text = "";
+           txt_rt.Text = "";
+           txt_tamount.Text = "";
+       }
+
+       protected void txt_id_TextChanged(object sender, EventArgs e)
+       {
+
+       }
+           }
+
+       }
+
+       
+      
+    
+
+
+       
