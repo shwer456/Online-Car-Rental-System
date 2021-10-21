@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace OnlineCarRentalSystem2
+{
+    public partial class Registration : System.Web.UI.Page
+    {
+        string connetionString;
+        SqlConnection con;
+        SqlCommand com;
+        int count;
+        
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            connetionString = @"Data Source=(LocalDB)\v11.0;AttachDbFilename=D:\project12\OnlineCarRentalSystem2\OnlineCarRentalSystem2\App_Data\carrental1.mdf;Integrated Security=True";
+            con = new SqlConnection(connetionString);
+            ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+
+        }
+
+        protected void btn_submit_Click(object sender, EventArgs e)
+        {
+            String id, name, address, username,password,  gender, contactno;
+            id = TextBox1.Text.Trim();
+            name = txt_name.Text.Trim();
+            address = txt_add.Text.Trim();
+            username = txt_username.Text.Trim();
+            password = txt_pwd.Text.Trim();
+             gender = string.Empty;
+             if (rbtn_male.Checked)
+            {
+                gender = "Male";
+            }
+             else if (rbtn_female.Checked)
+            {
+                gender = "Female";
+            }
+             contactno = txt_cn.Text.Trim();
+
+            con.Open();
+            SqlCommand cmd = new SqlCommand("insert into registration(Id,user_name,user_address,user_username,user_password,user_gender,user_contactnumber) values(@Id,@user_name,@user_address,@user_username,@user_password,@user_gender,@user_contactnumber)", con);
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@user_name", name);
+            cmd.Parameters.AddWithValue("@user_address", address);
+            cmd.Parameters.AddWithValue("@user_username", username);
+            cmd.Parameters.AddWithValue("@user_password", password);
+           cmd.Parameters.AddWithValue("@user_gender", gender);
+           cmd.Parameters.AddWithValue("@user_contactnumber", contactno);
+
+            cmd.ExecuteNonQuery();
+            con.Close();
+            Response.Redirect("~/Login.aspx");
+
+        }
+
+        protected void btn_new_Click(object sender, EventArgs e)
+        {
+            //SqlConnection con = new SqlConnection(strConnString);
+            String str = "select count(*)from registration ";
+            com = new SqlCommand(str, con);
+
+            con.Open();
+
+            count = Convert.ToInt16(com.ExecuteScalar()) + 1;
+            TextBox1.Text = count.ToString();
+            TextBox1.Enabled = false;
+
+            con.Close();
+        }
+    }
+}
