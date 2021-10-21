@@ -1,0 +1,188 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace OnlineCarRentalSystem2
+{
+    public partial class driverinformation : System.Web.UI.Page
+    {
+        string connetionString;
+        SqlConnection con;
+        SqlDataAdapter da = null;
+        DataSet ds = null;
+        SqlCommand com;
+        int count;
+
+
+
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            connetionString = @"Data Source=(LocalDB)\v11.0;AttachDbFilename=D:\project12\OnlineCarRentalSystem2\OnlineCarRentalSystem2\App_Data\carrental1.mdf;Integrated Security=True";
+            con = new SqlConnection(connetionString);
+            ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+            con.Open();
+
+            da = new SqlDataAdapter("select * from driverinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "driverinfo");
+            GridView1.DataSource = ds.Tables["driverinfo"];
+            GridView1.DataBind();
+
+
+
+
+            con.Close();
+
+
+
+        }
+
+        protected void btn_add_Click(object sender, EventArgs e)
+        {
+            String did, dname, demail, dcontactno,dgender,dage;
+            did = txt_di.Text.Trim();
+            dname = txt_dn.Text.Trim();
+            demail = txt_de.Text.Trim();
+            dcontactno = txt_dcn.Text.Trim();
+            dgender = string.Empty;
+            if (rbn_male.Checked)
+            {
+                dgender = "Male";
+            }
+            else if (rbn_female.Checked)
+            {
+                dgender = "Female";
+            }
+            dage = txt_age.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("insert into driverinfo(Id,d_name,d_email,d_contactno,d_gender,d_age) values(@Id,@d_name,@d_email,@d_contactno,@d_gender,@d_age)", con);
+            cmd.Parameters.AddWithValue("@Id", did);
+            cmd.Parameters.AddWithValue("@d_name", dname);
+            cmd.Parameters.AddWithValue("@d_email", demail);
+            cmd.Parameters.AddWithValue("@d_contactno", dcontactno);
+            cmd.Parameters.AddWithValue("@d_gender", dgender);
+            cmd.Parameters.AddWithValue("@d_age", dage);
+
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from driverinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "driverinfo");
+            GridView1.DataSource = ds.Tables["driverinfo"];
+            GridView1.DataBind();
+            con.Close();  
+
+        }
+
+        protected void btn_update_Click(object sender, EventArgs e)
+        {
+            String did, dname, demail, dcontactno, dgender, dage;
+            did = txt_di.Text.Trim();
+            dname = txt_dn.Text.Trim();
+            demail = txt_de.Text.Trim();
+            dcontactno = txt_dcn.Text.Trim();
+            dgender = string.Empty;
+            if (rbn_male.Checked)
+            {
+                dgender = "Male";
+            }
+            else if (rbn_female.Checked)
+            {
+                dgender = "Female";
+            }
+            dage = txt_age.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("update driverinfo set d_name=@d_name,d_email=@d_email,d_contactno=@d_contactno,d_gender=@d_gender,d_age=@d_age where Id=@Id", con);
+            cmd.Parameters.AddWithValue("@Id", did);
+            cmd.Parameters.AddWithValue("@d_name", dname);
+            cmd.Parameters.AddWithValue("@d_email", demail);
+            cmd.Parameters.AddWithValue("@d_contactno", dcontactno);
+            cmd.Parameters.AddWithValue("@d_gender", dgender);
+            cmd.Parameters.AddWithValue("@d_age", dage);
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from driverinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "driverinfo");
+            GridView1.DataSource = ds.Tables["driverinfo"];
+            GridView1.DataBind();
+            con.Close();  
+
+        }
+
+        protected void Button1_Click(object sender, EventArgs e)
+        {
+            String did, dname, demail, dcontactno, dage;
+            did = txt_di.Text.Trim();
+            dname = txt_dn.Text.Trim();
+            demail = txt_de.Text.Trim();
+            dcontactno = txt_dcn.Text.Trim();
+            dage = txt_age.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("delete driverinfo where Id=@Id", con);
+            cmd.Parameters.AddWithValue("@Id", did);
+            cmd.Parameters.AddWithValue("@d_name", dname);
+            cmd.Parameters.AddWithValue("@d_email", demail);
+            cmd.Parameters.AddWithValue("@d_contactno", dcontactno);
+            cmd.Parameters.AddWithValue("@d_age", dage);
+
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from driverinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "driverinfo");
+            GridView1.DataSource = ds.Tables["driverinfo"];
+            GridView1.DataBind();
+            con.Close(); 
+
+        }
+
+        protected void btn_clear_Click(object sender, EventArgs e)
+        {
+            txt_di.Text = "";
+            txt_dn.Text = "";
+            txt_de.Text = "";
+            txt_dcn.Text = "";
+            txt_age.Text = "";
+
+        }
+
+        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string gender1;
+            txt_di.Text = GridView1.SelectedRow.Cells[1].Text;
+            txt_dn.Text = GridView1.SelectedRow.Cells[2].Text;
+            txt_de.Text = GridView1.SelectedRow.Cells[3].Text;
+            txt_dcn.Text = GridView1.SelectedRow.Cells[4].Text;
+            gender1 = GridView1.SelectedRow.Cells[5].Text;
+            if (rbn_male.Checked)
+            {
+                gender1 = "Male";
+            }
+            else if (rbn_female.Checked)
+            {
+                gender1 = "Female";
+            }
+
+            txt_age.Text = GridView1.SelectedRow.Cells[6].Text;
+        }
+
+        protected void btn_new_Click(object sender, EventArgs e)
+        {
+
+            //SqlConnection con = new SqlConnection(strConnString);
+            String str = "select count(*)from driverinfo ";
+            com = new SqlCommand(str, con);
+
+            con.Open();
+
+            count = Convert.ToInt16(com.ExecuteScalar()) + 1;
+            txt_di.Text = count.ToString();
+            txt_di.Enabled = false;
+
+        }
+    }
+}
