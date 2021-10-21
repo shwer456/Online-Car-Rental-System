@@ -1,0 +1,158 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace OnlineCarRentalSystem2
+{
+    public partial class cardetails : System.Web.UI.Page
+    {
+
+        string connetionString;
+        SqlConnection con;
+        SqlDataAdapter da = null;
+        DataSet ds = null;
+        SqlCommand com;
+        int count;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            connetionString = @"Data Source=(LocalDB)\v11.0;AttachDbFilename=D:\project12\OnlineCarRentalSystem2\OnlineCarRentalSystem2\App_Data\carrental1.mdf;Integrated Security=True";
+            con = new SqlConnection(connetionString);
+            ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+            con.Open();
+
+            da = new SqlDataAdapter("select * from carinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "carinfo");
+            GridView1.DataSource = ds.Tables["carinfo"];
+            GridView1.DataBind();
+
+            con.Close();
+
+
+        }
+
+        protected void btn_add_Click(object sender, EventArgs e)
+        {
+            String cid, carname, carnumber, rentperday, rentperkm;
+            cid = txt_ci.Text.Trim();
+            carname = txt_cn.Text.Trim();
+            carnumber = txt_cno.Text.Trim();
+            rentperday = txt_rpd.Text.Trim();
+            rentperkm = txt_rpkm.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("insert into carinfo(Id,car_name,car_number,rent_perday,rent_perkm) values(@Id,@car_name,@car_number,@rent_perday,@rent_perkm)", con);
+            cmd.Parameters.AddWithValue("@Id", cid);
+            cmd.Parameters.AddWithValue("@car_name", carname);
+            cmd.Parameters.AddWithValue("@car_number", carnumber);
+            cmd.Parameters.AddWithValue("@rent_perday", rentperday);
+            cmd.Parameters.AddWithValue("@rent_perkm", rentperkm);
+
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from carinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "carinfo");
+            GridView1.DataSource = ds.Tables["carinfo"];
+            GridView1.DataBind();
+
+            con.Close();  
+
+
+            
+
+        }
+
+        protected void btn_update_Click(object sender, EventArgs e)
+        {
+            String cid, carname, carnumber, rentperday, rentperkm;
+            cid = txt_ci.Text.Trim();
+            carname = txt_cn.Text.Trim();
+            carnumber = txt_cno.Text.Trim();
+            rentperday = txt_rpd.Text.Trim();
+            rentperkm = txt_rpkm.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("update carinfo set car_name=@car_name,car_number=@car_number,rent_perday=@rent_perday,rent_perkm=@rent_perkm where Id=@Id", con);
+            cmd.Parameters.AddWithValue("@Id", cid);
+            cmd.Parameters.AddWithValue("@car_name", carname);
+            cmd.Parameters.AddWithValue("@car_number", carnumber);
+            cmd.Parameters.AddWithValue("@rent_perday", rentperday);
+            cmd.Parameters.AddWithValue("@rent_perkm", rentperkm);
+           
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from carinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "carinfo");
+            GridView1.DataSource = ds.Tables["carinfo"];
+            GridView1.DataBind();
+            con.Close();  
+
+        }
+
+        protected void btn_delete_Click(object sender, EventArgs e)
+        {
+            String cid, carname, carnumber, rentperday, rentperkm;
+            cid = txt_ci.Text.Trim();
+            carname = txt_cn.Text.Trim();
+            carnumber = txt_cno.Text.Trim();
+            rentperday = txt_rpd.Text.Trim();
+            rentperkm = txt_rpkm.Text.Trim();
+            con.Open();
+            SqlCommand cmd = new SqlCommand("delete carinfo where Id=@Id", con);
+            cmd.Parameters.AddWithValue("@Id", cid);
+            cmd.Parameters.AddWithValue("@car_name", carname);
+            cmd.Parameters.AddWithValue("@car_number", carnumber);
+            cmd.Parameters.AddWithValue("@rent_perday", rentperday);
+            cmd.Parameters.AddWithValue("@rent_perkm", rentperkm);
+
+            cmd.ExecuteNonQuery();
+            da = new SqlDataAdapter("select * from carinfo", con);
+            ds = new DataSet();
+            da.Fill(ds, "carinfo");
+            GridView1.DataSource = ds.Tables["carinfo"];
+            GridView1.DataBind();
+            con.Close();  
+
+        }
+
+        protected void btn_clear_Click(object sender, EventArgs e)
+        {
+            txt_ci.Text = "";
+            txt_cn.Text = "";
+            txt_cno.Text = "";
+            txt_rpd.Text = "";
+            txt_rpkm.Text = "";
+
+        }
+
+        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txt_ci.Text = GridView1.SelectedRow.Cells[1].Text;
+            txt_cn.Text = GridView1.SelectedRow.Cells[2].Text;
+            txt_cno.Text = GridView1.SelectedRow.Cells[3].Text;
+            txt_rpd.Text = GridView1.SelectedRow.Cells[4].Text;
+            txt_rpkm.Text = GridView1.SelectedRow.Cells[5].Text;
+
+        }
+
+        protected void btn_new_Click(object sender, EventArgs e)
+        {
+            //SqlConnection con = new SqlConnection(strConnString);
+            String str = "select count(*)from carinfo ";
+            com = new SqlCommand(str, con);
+
+            con.Open();
+
+            count = Convert.ToInt16(com.ExecuteScalar()) + 1;
+            txt_ci.Text = count.ToString();
+            txt_ci.Enabled = false;
+
+            con.Close();
+
+        }
+    }
+}
